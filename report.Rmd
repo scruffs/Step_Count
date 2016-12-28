@@ -4,8 +4,27 @@ By David English
 ##Initialisation
 The first step is to ensure the correct libraraies are loaded. These are loaded using the following code.
 
-```{r results='hide'}
+```{r results='hide', warning=FALSE, message=FALSE}
 library(dplyr)
 library(data.table)
 library(ggplot2)
+library(lubridate)
+```
+
+##Loading the Data
+Create a data table named *activity* that contains the data in the activity.csv file. The date column is subsequently transformed into a date format, rather than a character string.
+``` {r}
+activity <- fread("activity.csv") %>%
+      mutate(date = ymd(date))
+```
+
+##Number of Steps Per Day
+The data should be grouped by the date and then the data can be summarised to give the number of steps per day in a new data table.
+
+```{r warning=FALSE, message=FALSE}
+activity <- group_by(activity, date)
+activity_sums <- summarise(activity, sum(steps)) %>%
+                  rename(sums = `sum(steps)`)
+ggplot(activity_sums, aes(x = date, y = sums)) + 
+      geom_histogram(bins = length(activity_sums$date), stat = "identity")
 ```
