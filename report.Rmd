@@ -1,0 +1,11 @@
+#Reproducible Research Course Project 1
+By David English
+
+##Initialisation
+The first step is to ensure the correct libraraies are loaded. These are loaded using the following code.
+
+```{r results='hide'}
+library(dplyr)
+library(data.table)
+library(ggplot2)
+```
