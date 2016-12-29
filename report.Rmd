@@ -4,6 +4,10 @@ By David English
 ##Initialisation
 The first step is to ensure the correct libraraies are loaded. These are loaded using the following code.
 
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.path='figure/')
+```
+
 ```{r results='hide', warning=FALSE, message=FALSE}
 library(dplyr)
 library(data.table)
