@@ -9,6 +9,7 @@ library(dplyr)
 library(data.table)
 library(ggplot2)
 library(lubridate)
+library(chron)
 ```
 
 ##1. Loading the Data
@@ -102,4 +103,23 @@ imputed_median <- as.integer(median(imputed_by_date$sums))
 The **mean** number of steps taken per day after the missing values have been imputed is `r I(imputed_mean)`.  
 The **median** number of steps taken per day after the missing values have been imputed is `r I(imputed_median)`.  
 
-These values 
+These values are almost identical to thos computed before the missing values were imputed. This makes sense as the missing values were replaced by the mean values of the other data. However, the frequency of the values in the histogram are in general higher, which is consistent with more values being present in the imputed data set.
+
+##8. Steps on Weekends vs Weekdays
+
+Add a column to the imputed **activity** data frame for whether the date is a weekend or a weekday. This column will store this information as a factor with the levels, "Weekday" and "Weekend". This is then grouped by both the interval and "Weekend" and summarised as the mean of these groups.
+```{r}
+activity_imputed <- mutate(activity_imputed, 
+                           weekend = as.factor(ifelse(is.weekend(date), 
+                                                      "Weekend", 
+                                                      "Weekday")))
+imputed_by_weekend <- group_by(activity_imputed, interval, weekend) %>%
+                        summarise(mean = mean(steps))
+```
+The mean steps taken at each interval over all days is displayed by weekend or weekday.
+```{r}
+ggplot(imputed_by_weekend, aes(x = interval, y = mean, colour = weekend)) +
+      geom_line() +
+      facet_grid(~ weekend) +
+      labs(x = "Interval", y = "Steps")
+```
