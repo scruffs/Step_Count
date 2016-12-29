@@ -19,9 +19,9 @@ activity <- fread("activity.csv") %>%
 ```
 The data is reformed to include only those rows with complete cases (i.e., no NAs). This is then grouped by day and then a new data frame is created that summarises the data, giving the  sum of steps, the mean, and the median for each day.
 ```{r}
-activity <- filter(activity, complete.cases(activity)) %>%
-      group_by(date)
-activity_by_day <- summarise(activity, sums = sum(steps, na.rm = TRUE))
+activity_by_day <- filter(activity, complete.cases(activity)) %>%
+      group_by(date) %>%
+      summarise(sums = sum(steps, na.rm = TRUE))
 ```
 
 
@@ -46,7 +46,8 @@ The **median** of the number of steps taken per day is `r I(median_steps)`.
 
 Create a new data set that groups the data by the interval of the day across all days.
 ```{r}
-activity_by_interval <- group_by(activity, interval) %>%
+activity_by_interval <- filter(activity, complete.cases(activity)) %>%
+      group_by(interval) %>%
       summarise(mean = mean(steps))
 ```
 
@@ -62,3 +63,43 @@ interval_max <- activity_by_interval$interval[which.max(activity_by_interval$mea
 ```
 
 The interval that on average has the **maximum** number of steps is `r I(interval_max)`.  
+
+##6. Imputing Missing Values
+
+Create a vector of where the missing values are in the data set.
+```{r}
+missing_vals <- is.na(activity$steps)
+```
+There are `r I(sum(missing_vals))` missing data points in the **activity** data set.  
+
+Find the 5 minute interval of the day that the missing value corresponds to and then create a matching vector of the average steps taken for that interval.
+```{r}
+missing_int <- activity$interval[missing_vals]
+imputed_vals <- sapply(missing_int, function(x) {
+      activity_by_interval$mean[which(activity_by_interval$interval == x)]})
+```
+This can then be used to impute the missing values in a new data set.
+```{r}
+activity_imputed <- activity
+activity_imputed$steps[missing_vals] <- imputed_vals
+```
+This new data set with imputed values now needs to be grouped by the date and summarised to give the mean again.
+```{r}
+imputed_by_date <- group_by(activity_imputed, date) %>%
+                  summarise(sums = sum(steps))
+```
+This is then used to make the histogram of the average number of steps per day.
+```{r}
+ggplot(imputed_by_date, aes(x = sums)) +
+      geom_histogram(binwidth = 1000, col = "black", fill = "blue") +
+      labs(x = "Total Steps Per Day", y = "Frequency")
+```
+
+```{r}
+imputed_mean <- as.integer(mean(imputed_by_date$sums))
+imputed_median <- as.integer(median(imputed_by_date$sums))
+```
+The **mean** number of steps taken per day after the missing values have been imputed is `r I(imputed_mean)`.  
+The **median** number of steps taken per day after the missing values have been imputed is `r I(imputed_median)`.  
+
+These values 
