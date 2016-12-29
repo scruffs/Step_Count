@@ -55,3 +55,10 @@ ggplot(activity_by_interval, aes(x = interval)) +
       geom_line(aes(y = mean)) +
       labs(x = "Interval", y = "Steps")
 ```
+
+##5. Interval with Max Steps on Average
+```{r}
+interval_max <- activity_by_interval$interval[which.max(activity_by_interval$mean)]
+```
+
+The interval that on average has the **maximum** number of steps is `r I(interval_max)`.  
