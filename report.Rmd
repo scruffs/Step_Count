@@ -11,20 +11,47 @@ library(ggplot2)
 library(lubridate)
 ```
 
-##Loading the Data
+##1. Loading the Data
 Create a data table named *activity* that contains the data in the activity.csv file. The date column is subsequently transformed into a date format, rather than a character string.
 ``` {r}
 activity <- fread("activity.csv") %>%
       mutate(date = ymd(date))
 ```
+The data is reformed to include only those rows with complete cases (i.e., no NAs). This is then grouped by day and then a new data frame is created that summarises the data, giving the  sum of steps, the mean, and the median for each day.
+```{r}
+activity <- filter(activity, complete.cases(activity)) %>%
+      group_by(date)
+activity_by_day <- summarise(activity, sums = sum(steps, na.rm = TRUE))
+```
 
-##Number of Steps Per Day
-The data should be grouped by the date and then the data can be summarised to give the number of steps per day in a new data table.
+
+##2. Number of Steps Per Day
+A histogram of the total number of steps by each day.
 
 ```{r warning=FALSE, message=FALSE}
-activity <- group_by(activity, date)
-activity_sums <- summarise(activity, sum(steps)) %>%
-                  rename(sums = `sum(steps)`)
-ggplot(activity_sums, aes(x = date, y = sums)) + 
-      geom_histogram(bins = length(activity_sums$date), stat = "identity")
+ggplot(activity_by_day, aes(x = sums)) + 
+      geom_histogram(binwidth = 1000, col = "black", fill = "blue") +
+      labs(x = "Total Steps Per Day", y = "Frequency")
+```
+
+##3. Mean and Median Number of Steps Per Day
+```{r}
+mean_steps <- as.integer(mean(activity_by_day$sums, na.rm = TRUE))
+median_steps <- median(activity_by_day$sums, na.rm = TRUE)
+```
+The **mean** of the number of steps taken per day is `r I(mean_steps)`.  
+The **median** of the number of steps taken per day is `r I(median_steps)`.
+
+##4. Average Steps 
+
+Create a new data set that groups the data by the interval of the day across all days.
+```{r}
+activity_by_interval <- group_by(activity, interval) %>%
+      summarise(mean = mean(steps))
+```
+
+```{r warning=FALSE, message=FALSE}
+ggplot(activity_by_interval, aes(x = interval)) +
+      geom_line(aes(y = mean)) +
+      labs(x = "Interval", y = "Steps")
 ```
